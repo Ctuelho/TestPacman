@@ -1,21 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace Game
 {
-    public enum MovementDirection { None, Up, Down, Left, Right }
-
-    public class Movable : MonoBehaviour
-    {
-        public Pacman.MovableEntity MovableEntity { get; protected set; }
-    }
-
     public class GameManager : MonoBehaviour
     {
+        #region consts
+        const int SMALL_PELLET_SCORE = 10;
+        const int BIG_PELLET_SCORE = 50;
+        #endregion consts
+
+        #region static fields
         //singleton
         public static GameManager Instance = null;
+
+        public static int Score;
+        public static int Lives;
+        public static int Level;
+        #endregion static fields
 
         #region properties
         public LevelManager LevelManager => _levelManager;
@@ -26,14 +31,10 @@ namespace Game
         private LevelManager _levelManager;
 
         [SerializeField]
-        private Transform _testSubject;
-
-        [SerializeField]
         private Player _player;
 
-        private List<Movable> _movingEntities;
+        private List<Navigator> _navigators;
         #endregion private fields
-
 
         #region unity event functions
         private void Awake()
@@ -49,45 +50,52 @@ namespace Game
             }
         }
 
+        private void OnEnable()
+        {
+            GameEvents.Instance.PelletCollected += OnPelletCollectedListener;
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.Instance.PelletCollected -= OnPelletCollectedListener;
+        }
+
         // Start is called before the first frame update
         void Start()
         {
             _levelManager.Initialize();
 
-            _movingEntities = new List<Movable>();
-            Pacman.MovableEntity test = new Pacman.MovableEntity();
-            test.SetSpeed(10);
-            var startNode = _levelManager.NavGraph.GetNode(0, 0);
-            test.SetCurrentPosition(startNode.Indexes.Item1, startNode.Indexes.Item2);
-            var path =
-                _levelManager.NavGraph.ShortestPath(
-                    _levelManager.NavGraph.GetNode(0, 0),
-                    _levelManager.NavGraph.GetNode(
-                        _levelManager.NavGraph.maxX, _levelManager.NavGraph.maxY));
-            test.SetPath(path);
-            _levelManager.DrawPath(path.ToList());
-            //_movingEntities.Add(test);
+            _navigators = new List<Navigator>();
 
-            _player.Initialize(13, 12);
-            var playerInitialPath =
-                _levelManager.NavGraph.ShortestPath(
-                    _levelManager.NavGraph.GetNode(13, 12),
-                    _levelManager.NavGraph.GetNode(12, 12));
-            _player.MovableEntity.SetPath(playerInitialPath);
-            _movingEntities.Add(_player);
+            var playerNodes = 
+                _levelManager.NavGraph.GetNodesOfType(Pacman.NodeType.PlayerSpawn);
+            if(playerNodes.Count > 0)
+            {
+                _player.Initialize(
+                    playerNodes[0].Indexes.Item1, playerNodes[0].Indexes.Item2);
+
+                var playerInitialPath =
+                    _levelManager.NavGraph.ShortestPath(
+                        playerNodes[0], _levelManager.NavGraph.GetNode(
+                            playerNodes[0].Indexes.Item1-1, playerNodes[0].Indexes.Item2));
+
+                _player.NavEntity.SetPath(playerInitialPath);
+
+                _navigators.Add(_player);
+            }
         }
 
         // Update is called once per frame
         void Update()
         {
-            for(int i = 0; i < _movingEntities.Count; i++)
+            for(int i = 0; i < _navigators.Count; i++)
             {
-                _movingEntities[i].MovableEntity.Move(Time.deltaTime);
+                _navigators[i].NavEntity.Move(Time.deltaTime);
                 Vector3 pos = new Vector3(
-                    0.5f + _movingEntities[i].MovableEntity.Position.Item1 - _levelManager.NavGraph.maxX / 2,
-                    0.5f + _movingEntities[i].MovableEntity.Position.Item2 - _levelManager.NavGraph.maxY / 2,
+                    0.5f + _navigators[i].NavEntity.Position.Item1 - _levelManager.NavGraph.maxX / 2,
+                    0.5f + _navigators[i].NavEntity.Position.Item2 - _levelManager.NavGraph.maxY / 2,
                     0);
-                _movingEntities[i].transform.position = pos;
+                _navigators[i].transform.position = pos;
             }
             
         }
@@ -99,6 +107,21 @@ namespace Game
             _levelManager = levelManager;
         }
         #endregion set functions
+
+        #region event listeners
+        private void OnPelletCollectedListener(object sender, GameEvents.PelletCollectedEventArgs e)
+        {
+            switch (e.PelletType) 
+            {
+                case PelletType.Small:
+                    Score += SMALL_PELLET_SCORE;
+                    break;
+                case PelletType.Big:
+                    Score += BIG_PELLET_SCORE;
+                    break;
+            }
+        }
+        #endregion event listeners
     }
 }
 

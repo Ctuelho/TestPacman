@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game
 {
-    public class Player : Movable
+    public class Player : Navigator
     {
         #region properties
         public bool Initialized { get; private set; }
@@ -43,7 +43,7 @@ namespace Game
             }
 
             //it means the entity has stopped
-            if (MovableEntity.CanMove && !MovableEntity.IsMoving)
+            if (NavEntity.CanMove && NavEntity.ReachedDestination)
             {
                 bool changedDirection = false;
 
@@ -76,18 +76,15 @@ namespace Game
                     //try finding a walkable node in the new direction
                     Pacman.NavNode nodeInDirection =
                             GameManager.Instance.LevelManager.NavGraph.GetNode(
-                                (int)Math.Round(MovableEntity.Position.Item1) + xIndexShiftNewDirection,
-                                (int)Math.Round(MovableEntity.Position.Item2) + yIndexShiftNewDirection);
+                                (int)Math.Round(NavEntity.Position.Item1) + xIndexShiftNewDirection,
+                                (int)Math.Round(NavEntity.Position.Item2) + yIndexShiftNewDirection);
 
                     //found a node, change player's path and direction
                     if (nodeInDirection != null)
                     {
-                        Debug.Log("Moving in the new direction");
-                        Debug.Log(inputDirection);
-                        Debug.Log(nodeInDirection.Indexes.Item1 + " " + nodeInDirection.Indexes.Item2);
                         changedDirection = true;
                         _movementDirection = inputDirection;
-                        MovableEntity.SetPath(
+                        NavEntity.SetPath(
                             new System.Collections.Generic.List<Pacman.NavNode>() { nodeInDirection });
                     }
                 }
@@ -122,17 +119,27 @@ namespace Game
                     //try finding a walkable node in the old direction
                     Pacman.NavNode nodeInDirection =
                             GameManager.Instance.LevelManager.NavGraph.GetNode(
-                                (int)Math.Round(MovableEntity.Position.Item1) + xIndexShiftOldDirection,
-                                (int)Math.Round(MovableEntity.Position.Item2) + yIndexShiftOldDirection);
+                                (int)Math.Round(NavEntity.Position.Item1) + xIndexShiftOldDirection,
+                                (int)Math.Round(NavEntity.Position.Item2) + yIndexShiftOldDirection);
 
                     //found a node, change player's target
                     if (nodeInDirection != null)
                     {
-                        Debug.Log("Moving in the old direction");
-                        MovableEntity.SetPath(
+                        NavEntity.SetPath(
                             new System.Collections.Generic.List<Pacman.NavNode>() { nodeInDirection });
                     }
                 }
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            //test if it was a pellet
+            var pellet = collision.gameObject.GetComponent<Pellet>();
+            if(pellet != null)
+            {
+                pellet.Collect();
+                return;
             }
         }
         #endregion unity event functions  
@@ -141,11 +148,11 @@ namespace Game
         public void Initialize(int x, int y)
         {
             //initialize player
-            MovableEntity = new Pacman.MovableEntity();
+            NavEntity = new Pacman.NavEntity();
             _movementDirection = MovementDirection.Left;
-            MovableEntity.SetCurrentPosition(x, y);
-            MovableEntity.SetSpeed(5);
-            MovableEntity.EnableMoving();
+            NavEntity.SetCurrentPosition(x, y);
+            NavEntity.SetSpeed(5);
+            NavEntity.EnableMoving();
             Initialized = true;
         }
         #endregion public functions

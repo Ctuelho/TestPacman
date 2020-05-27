@@ -1,100 +1,149 @@
-﻿using System.Collections;
+﻿using Game;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class LevelManager : MonoBehaviour
+namespace Game
 {
-    #region properties
-    public Pacman.NavGraph NavGraph { get; private set; }
-    #endregion properties
-
-    #region private fields
-    [SerializeField]
-    private GameObject _pointPrefab;
-
-    [SerializeField]
-    private Tilemap _tilemap;
-    #endregion private fields
-
-    #region unity event functions
-    // Start is called before the first frame update
-    public void Initialize()
+    public class LevelManager : MonoBehaviour
     {
-        NavGraph = new Pacman.NavGraph();
+        #region properties
+        public Pacman.NavGraph NavGraph { get; private set; }
+        #endregion properties
 
-        FillGraph();
+        #region private fields
+        [SerializeField]
+        private GameObject _pelletPrefab;
 
-        NavGraph.LinkNodes();
+        [SerializeField]
+        private GameObject _bigPelletPrefab;
 
-        //SpawnPoints();
+        [SerializeField]
+        private Tilemap _tilemap;
 
-    }
+        List<Pellet> _pellets;
+        #endregion private fields
 
-    public void DrawPath(List<Pacman.NavNode> path)
-    {
-        StartCoroutine(CreatePointsOfPath(path));
-    }
+        #region unity event functions
+        #endregion unity event functions
 
-    IEnumerator CreatePointsOfPath(List<Pacman.NavNode> path)
-    {
-        foreach (var node in path)
+        #region public functions
+        public void Initialize()
         {
-            var point = Instantiate(_pointPrefab);
-            point.transform.position = new Vector3(
-                0.5f + node.Indexes.Item1 - NavGraph.maxX / 2,
-                0.5f + node.Indexes.Item2 - NavGraph.maxY / 2,
-                0);
-            yield return new WaitForSeconds(0.05f);
+            NavGraph = new Pacman.NavGraph();
+
+            MountLevel();
+
+            NavGraph.LinkNodes();
         }
-    }
+        #endregion public functions
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    #endregion unity event functions
-
-    #region level montage
-    private void FillGraph()
-    {
-        //iterates through all tiles and create nodes in the graph
-        //based on the tile's poisition in the grid
-        foreach (var tilePosition in _tilemap.cellBounds.allPositionsWithin)
+        #region level montage
+        /// <summary>
+        /// Create the graph and fills it with the tilemap information
+        /// Only "walkable" nodes are considered
+        /// </summary>
+        private void MountLevel()
         {
-            var tile = _tilemap.GetTile(tilePosition);
+            _pellets = new List<Pellet>();
 
-            if (tile != null)
+            //iterates through all tiles and create nodes in the graph
+            //and elements int he level based on the tile's poisition 
+            //in the grid and type. Walls are not considered for the graph
+            foreach (var tilePosition in _tilemap.cellBounds.allPositionsWithin)
             {
-                //only filler and void tiles are considered navigation area
-                if (tile.name.Equals("fillerTile") || tile.name.Equals("voidTile"))
+                var tile = _tilemap.GetTile(tilePosition);
+
+                if (tile != null)
                 {
+                    bool clearColor = false;
                     Pacman.NavNode navNode = new Pacman.NavNode();
-                    navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                    if (tile.name.Equals("pelletTile"))
+                    {
+                        clearColor = true;
 
-                    NavGraph.AddNavNode(navNode);
+                        navNode.NodeType = Pacman.NodeType.Normal;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+
+                        var pellet = Instantiate(_pelletPrefab).GetComponent<Pellet>();
+                        pellet.PelletType = PelletType.Small;
+                        pellet.transform.position = _tilemap.GetCellCenterWorld(tilePosition);
+                        _pellets.Add(pellet);
+                    }
+                    else if (tile.name.Equals("bigPelletTile"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.PowerUp;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+
+                        var bigPellet = Instantiate(_bigPelletPrefab).GetComponent<Pellet>();
+                        bigPellet.PelletType = PelletType.Big;
+                        bigPellet.transform.position = _tilemap.GetCellCenterWorld(tilePosition);
+                        _pellets.Add(bigPellet);
+                    }
+                    else if (tile.name.Equals("emptyTile"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.Normal;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("playerTile"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.PlayerSpawn;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+
+                    if (clearColor)
+                    {
+                        _tilemap.SetTileFlags(tilePosition, TileFlags.None);
+                        _tilemap.SetColor(tilePosition, new Color(0, 0, 0, 0));
+                    }
                 }
             }
         }
-    }
 
-    private void SpawnPoints()
-    {
-        //iterate through all tiles and spawn points over the appropriate tiles
-        foreach (var tilePosition in _tilemap.cellBounds.allPositionsWithin)
+        private void SpawnPoints()
         {
-            var tile = _tilemap.GetTile(tilePosition);
-
-            if (tile != null)
+            if(_pellets == null)
             {
-                if (tile.name.Equals("fillerTile"))
+                _pellets = new List<Pellet>();
+
+                //iterate through all tiles and spawn points over the appropriate tiles
+                foreach (var tilePosition in _tilemap.cellBounds.allPositionsWithin)
                 {
-                    var point = Instantiate(_pointPrefab);
-                    point.transform.position = _tilemap.GetCellCenterWorld(tilePosition);
+                    var tile = _tilemap.GetTile(tilePosition);
+
+                    if (tile != null)
+                    {
+                        if (tile.name.Equals("pelletTile"))
+                        {
+                            
+                        }
+                        else if (tile.name.Equals("bigPelletTile"))
+                        {
+                            
+                        }
+                    }
+                }
+            }
+            else
+            {
+                //reactivate the pellets
+                foreach(var pellet in _pellets)
+                {
+                    pellet.gameObject.SetActive(true);
                 }
             }
         }
+        #endregion level montage
     }
-    #endregion level montage
 }

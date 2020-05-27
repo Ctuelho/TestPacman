@@ -5,7 +5,7 @@ using System.Linq;
 namespace Pacman 
 {
     #region navigation graph
-    public enum NODE { None, Normal, PlayerSpawn, Void, Wall, PowerUp, BonusPoint, GhostPosition1, GhostPosition2, GhostPosition3 }
+    public enum NodeType { None, Normal, PlayerSpawn, Void, Wall, PowerUp, BonusPoint, GhostPosition1, GhostPosition2, GhostPosition3 }
 
     public class NavNode
     {
@@ -15,6 +15,7 @@ namespace Pacman
         public NavNode Down;
         public NavNode Left;
         public NavNode Right;
+        public NodeType NodeType;
 
         //for graph algorithms
         public List<NavNode> Neighbors;
@@ -79,6 +80,26 @@ namespace Pacman
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Search in the graph for the nodes with the given node type
+        /// </summary>
+        /// <param name="nodeType">The type required</param>
+        /// <returns>A list containing the nodes, may be empty if none is found</returns>
+        public List<NavNode> GetNodesOfType(NodeType nodeType)
+        {
+            var nodes =
+                Nodes.Where(n => n.NodeType == nodeType);
+
+            List<NavNode> result = new List<NavNode>();
+
+            foreach(var node in nodes)
+            {
+                result.Add(node);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -190,23 +211,24 @@ namespace Pacman
     #endregion navigation graph
 
     #region entities
-    public class MovableEntity
+    public class NavEntity
     {
-        #region MovableEntity properties
+        #region NavEntity properties
+        public bool ReachedDestination { get; private set; }
         public bool CanMove { get; private set; }
         public bool IsMoving { get; private set; }
         public Tuple<float, float> Position { get; private set; }
         public Tuple<int, int> LastIndexes { get; private set; }
-        #endregion MovableEntity properties
+        #endregion NavEntity properties
 
-        #region MovableEntity private fields
+        #region NavEntity private fields
         private float _speed = 1f;
         private Tuple<float, float> _lastPosition;
         private List<NavNode> _path;
         private NavNode _targetNode;
-        #endregion MovableEntity private fields
+        #endregion NavEntity private fields
 
-        #region MovableEntity set functions
+        #region NavEntity set functions
         /// <summary>
         /// Sets the entity's movement speed multiplier
         /// </summary>
@@ -242,14 +264,16 @@ namespace Pacman
             _targetNode = path[0];
             path.RemoveAt(0);
 
+            ReachedDestination = false;
+
             if (LastIndexes == null)
                 LastIndexes = new Tuple<int, int>(
                         _targetNode.Indexes.Item1,
                         _targetNode.Indexes.Item2);
         }
-        #endregion MovableEntity set functions
+        #endregion NavEntity set functions
 
-        #region MovableEntity controll functions
+        #region NavEntity controll functions
         /// <summary>
         /// Sets the entity capable of moving
         /// </summary>
@@ -279,9 +303,13 @@ namespace Pacman
             //there is no path to follow
             if (!CanMove || _targetNode == null || _path == null)
             {
+                ReachedDestination = true;
                 IsMoving = false;
                 return;
             }
+
+            ReachedDestination = false;
+            IsMoving = true;
 
             //calc this frame's translation
             float deltaX = (_targetNode.Indexes.Item1 - _lastPosition.Item1) * deltaTime * _speed;
@@ -301,7 +329,7 @@ namespace Pacman
                 Position = pos;
             }
 
-            //check if reached target's position
+            //check if reached target position
             if (_targetNode.Indexes.Item1 == Position.Item1 &&
                 _targetNode.Indexes.Item2 == Position.Item2)
             {
@@ -310,6 +338,7 @@ namespace Pacman
                         _targetNode.Indexes.Item1,
                         _targetNode.Indexes.Item2);
 
+                //feed on the path to continue moving
                 if (_path.Count > 0)
                 {
                     _targetNode = _path[0];
@@ -318,13 +347,12 @@ namespace Pacman
                 else
                 {
                     _targetNode = null;
+                    ReachedDestination = true;
+                    IsMoving = false;
                 }
             }
-
-            IsMoving = true;
-
         }
-        #endregion MovableEntity controll functions
+        #endregion NavEntity controll functions
     }
     #endregion entities
 }
