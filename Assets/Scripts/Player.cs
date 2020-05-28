@@ -6,17 +6,17 @@ namespace Game
     public class Player : Navigator
     {
         #region properties
-        public bool Initialized { get; private set; }
+        public bool CanBeDamaged { get; protected set; } = true;
+        public bool PowerUpIsActive { get; protected set; } = false;
+        public MovementDirection MovementDirection { get; private set; } = MovementDirection.Left;
         #endregion properties
 
-        #region private fields
-        private MovementDirection _movementDirection;
-        #endregion private fields
-        
         #region unity event functions
         // Update is called once per frame
-        void Update()
+        protected virtual void Update()
         {
+            //player moves on tile per time
+
             if (!Initialized)
             {
                 Debug.Log("Initialize player first");
@@ -24,7 +24,7 @@ namespace Game
             }   
 
             //read player's input
-            var inputDirection = _movementDirection;
+            var inputDirection = MovementDirection;
             if (Input.GetKey(KeyCode.UpArrow))
             {
                 inputDirection = MovementDirection.Up;
@@ -45,9 +45,16 @@ namespace Game
             //it means the entity has stopped
             if (NavEntity.CanMove && NavEntity.ReachedDestination)
             {
+                GameEvents.Instance.OnPlayerWalkedTile(
+                    new GameEvents.OnPlayerWalkedTileEventArgs()
+                    {
+                        indexX = NavEntity.LastIndexes.Item1, 
+                        indexY = NavEntity.LastIndexes.Item2
+                    });             
+
                 bool changedDirection = false;
 
-                if (inputDirection != _movementDirection)
+                if (inputDirection != MovementDirection)
                 {
                     int xIndexShiftNewDirection = 0;
                     int yIndexShiftNewDirection = 0;
@@ -75,7 +82,7 @@ namespace Game
 
                     //try finding a walkable node in the new direction
                     Pacman.NavNode nodeInDirection =
-                            GameManager.Instance.LevelManager.NavGraph.GetNode(
+                            GameController.Instance.LevelManager.NavGraph.GetNode(
                                 (int)Math.Round(NavEntity.Position.Item1) + xIndexShiftNewDirection,
                                 (int)Math.Round(NavEntity.Position.Item2) + yIndexShiftNewDirection);
 
@@ -83,7 +90,7 @@ namespace Game
                     if (nodeInDirection != null)
                     {
                         changedDirection = true;
-                        _movementDirection = inputDirection;
+                        MovementDirection = inputDirection;
                         NavEntity.SetPath(
                             new System.Collections.Generic.List<Pacman.NavNode>() { nodeInDirection });
                     }
@@ -96,7 +103,7 @@ namespace Game
                     int yIndexShiftOldDirection = 0;
 
                     //calc the direction on grid coordinates for new input
-                    switch (_movementDirection)
+                    switch (MovementDirection)
                     {
                         case MovementDirection.Up:
                             xIndexShiftOldDirection = 0;
@@ -118,7 +125,7 @@ namespace Game
 
                     //try finding a walkable node in the old direction
                     Pacman.NavNode nodeInDirection =
-                            GameManager.Instance.LevelManager.NavGraph.GetNode(
+                            GameController.Instance.LevelManager.NavGraph.GetNode(
                                 (int)Math.Round(NavEntity.Position.Item1) + xIndexShiftOldDirection,
                                 (int)Math.Round(NavEntity.Position.Item2) + yIndexShiftOldDirection);
 
@@ -130,32 +137,43 @@ namespace Game
                     }
                 }
             }
+
+            if (MovementDirection == MovementDirection.Left)
+            {
+                transform.localScale = new Vector3(-1, 1, 1);
+            }
+            else if (MovementDirection == MovementDirection.Right)
+            {
+                transform.localScale = new Vector3(1, 1, 1);
+            }
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            //test if it was a pellet
-            var pellet = collision.gameObject.GetComponent<Pellet>();
-            if(pellet != null)
-            {
-                pellet.Collect();
-                return;
-            }
+            
         }
         #endregion unity event functions  
 
         #region public functions
-        public void Initialize(int x, int y)
+        public override void Initialize(int x, int y)
         {
-            //initialize player
-            NavEntity = new Pacman.NavEntity();
-            _movementDirection = MovementDirection.Left;
-            NavEntity.SetCurrentPosition(x, y);
-            NavEntity.SetSpeed(5);
-            NavEntity.EnableMoving();
-            Initialized = true;
+            base.Initialize(x, y);
+
+            MovementDirection = MovementDirection.Left;
+            NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED);
+        }
+
+        public virtual void EnablePowerUp()
+        {
+            PowerUpIsActive = true;
+            CanBeDamaged = false;
+        }
+
+        public virtual void DisablePowerUp()
+        {
+            PowerUpIsActive = false;
+            CanBeDamaged = true;
         }
         #endregion public functions
-
     }
 }

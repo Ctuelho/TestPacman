@@ -1,6 +1,8 @@
 ﻿using Game;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -15,14 +17,11 @@ namespace Game
         #region private fields
         [SerializeField]
         private GameObject _pelletPrefab;
-
         [SerializeField]
         private GameObject _bigPelletPrefab;
-
         [SerializeField]
         private Tilemap _tilemap;
-
-        List<Pellet> _pellets;
+        List<Collectable> _collectables;
         #endregion private fields
 
         #region unity event functions
@@ -37,6 +36,11 @@ namespace Game
 
             NavGraph.LinkNodes();
         }
+
+        public Collectable GetCollectable(int indexX, int indexY)
+        {
+            return _collectables.Where(c => c.Index.x == indexX && c.Index.y == indexY).FirstOrDefault();
+        }
         #endregion public functions
 
         #region level montage
@@ -46,7 +50,7 @@ namespace Game
         /// </summary>
         private void MountLevel()
         {
-            _pellets = new List<Pellet>();
+            _collectables = new List<Collectable>();
 
             //iterates through all tiles and create nodes in the graph
             //and elements int he level based on the tile's poisition 
@@ -70,7 +74,8 @@ namespace Game
                         var pellet = Instantiate(_pelletPrefab).GetComponent<Pellet>();
                         pellet.PelletType = PelletType.Small;
                         pellet.transform.position = _tilemap.GetCellCenterWorld(tilePosition);
-                        _pellets.Add(pellet);
+                        pellet.Index = new Vector2(tilePosition.x, tilePosition.y);
+                        _collectables.Add(pellet);
                     }
                     else if (tile.name.Equals("bigPelletTile"))
                     {
@@ -83,7 +88,8 @@ namespace Game
                         var bigPellet = Instantiate(_bigPelletPrefab).GetComponent<Pellet>();
                         bigPellet.PelletType = PelletType.Big;
                         bigPellet.transform.position = _tilemap.GetCellCenterWorld(tilePosition);
-                        _pellets.Add(bigPellet);
+                        bigPellet.Index = new Vector2(tilePosition.x, tilePosition.y);
+                        _collectables.Add(bigPellet);
                     }
                     else if (tile.name.Equals("emptyTile"))
                     {
@@ -93,11 +99,93 @@ namespace Game
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }
+                    else if (tile.name.Equals("bonusPointTile"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.BonusPoint;
+                        NavGraph.BonusPointNode = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
                     else if (tile.name.Equals("playerTile"))
                     {
                         clearColor = true;
 
                         navNode.NodeType = Pacman.NodeType.PlayerSpawn;
+                        NavGraph.PlayerSpawnNode = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("enemy1"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.EnemyPosition1;
+                        NavGraph.EnemyPosition1Node = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("enemy2"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.EnemyPosition2;
+                        NavGraph.EnemyPosition2Node = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("enemy3"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.EnemyPosition3;
+                        NavGraph.EnemyPosition3Node = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("enemy4"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.EnemyPosition4;
+                        NavGraph.EnemyPosition4Node = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("warperTileDown"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.WarperDown;
+                        NavGraph.WarperDown = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("warperTileUp"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.WarperUp;
+                        NavGraph.WarperUp = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("warperTileLeft"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.WarperLeft;
+                        NavGraph.WarperLeft = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("warperTileRight"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.WarperRight;
+                        NavGraph.WarperRight= navNode;
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }
@@ -107,40 +195,6 @@ namespace Game
                         _tilemap.SetTileFlags(tilePosition, TileFlags.None);
                         _tilemap.SetColor(tilePosition, new Color(0, 0, 0, 0));
                     }
-                }
-            }
-        }
-
-        private void SpawnPoints()
-        {
-            if(_pellets == null)
-            {
-                _pellets = new List<Pellet>();
-
-                //iterate through all tiles and spawn points over the appropriate tiles
-                foreach (var tilePosition in _tilemap.cellBounds.allPositionsWithin)
-                {
-                    var tile = _tilemap.GetTile(tilePosition);
-
-                    if (tile != null)
-                    {
-                        if (tile.name.Equals("pelletTile"))
-                        {
-                            
-                        }
-                        else if (tile.name.Equals("bigPelletTile"))
-                        {
-                            
-                        }
-                    }
-                }
-            }
-            else
-            {
-                //reactivate the pellets
-                foreach(var pellet in _pellets)
-                {
-                    pellet.gameObject.SetActive(true);
                 }
             }
         }

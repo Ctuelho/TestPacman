@@ -5,7 +5,22 @@ using System.Linq;
 namespace Pacman 
 {
     #region navigation graph
-    public enum NodeType { None, Normal, PlayerSpawn, Void, Wall, PowerUp, BonusPoint, GhostPosition1, GhostPosition2, GhostPosition3 }
+    public enum NodeType 
+    { 
+        None, 
+        Normal, 
+        PlayerSpawn,
+        PowerUp,
+        BonusPoint,
+        EnemyPosition1,
+        EnemyPosition2,
+        EnemyPosition3,
+        EnemyPosition4,
+        WarperUp,
+        WarperDown,
+        WarperLeft,
+        WarperRight
+    }
 
     public class NavNode
     {
@@ -32,10 +47,15 @@ namespace Pacman
         #region NavGraph public fields
         public List<NavNode> Nodes { get; private set; }
         public NavNode PlayerSpawnNode;
-        public NavNode GhostPosition1Node;
-        public NavNode GhostPosition2Node;
-        public NavNode GhostPosition3Node;
+        public NavNode EnemyPosition1Node;
+        public NavNode EnemyPosition2Node;
+        public NavNode EnemyPosition3Node;
+        public NavNode EnemyPosition4Node;
         public NavNode BonusPointNode;
+        public NavNode WarperUp;
+        public NavNode WarperDown;
+        public NavNode WarperLeft;
+        public NavNode WarperRight;
         public int maxX;
         public int maxY;
         #endregion NavGraph public fields
@@ -214,9 +234,9 @@ namespace Pacman
     public class NavEntity
     {
         #region NavEntity properties
-        public bool ReachedDestination { get; private set; }
-        public bool CanMove { get; private set; }
-        public bool IsMoving { get; private set; }
+        public bool ReachedDestination { get; private set; } = true;
+        public bool CanMove { get; private set; } = false;
+        public bool IsMoving { get; private set; } = false;
         public Tuple<float, float> Position { get; private set; }
         public Tuple<int, int> LastIndexes { get; private set; }
         #endregion NavEntity properties
@@ -244,11 +264,15 @@ namespace Pacman
         /// </summary>
         /// <param name="x">X index in the grid</param>
         /// <param name="y">Y index in the grid</param>
-        public void SetCurrentPosition(float x, float y)
+        public void SetCurrentPosition(int x, int y)
         {
             Position = new Tuple<float, float>(x, y);
+
             if (_lastPosition == null)
                 _lastPosition = new Tuple<float, float>(x, y);
+
+            if (LastIndexes == null)
+                LastIndexes = new Tuple<int, int>(x, y);
         }
 
         /// <summary>
@@ -260,17 +284,19 @@ namespace Pacman
         /// </param>
         public void SetPath(List<NavNode> path)
         {
+            if (path == null || path.Count == 0)
+                return;
+
             _path = path;
-            _targetNode = path[0];
-            path.RemoveAt(0);
+            if (_targetNode == null)
+            {
+                _targetNode = path[0];
+                path.RemoveAt(0);
+            }
 
             ReachedDestination = false;
-
-            if (LastIndexes == null)
-                LastIndexes = new Tuple<int, int>(
-                        _targetNode.Indexes.Item1,
-                        _targetNode.Indexes.Item2);
         }
+
         #endregion NavEntity set functions
 
         #region NavEntity controll functions
@@ -292,10 +318,7 @@ namespace Pacman
         }
 
         /// <summary>
-        /// The entity will approach it's target node and snap
-        /// it's position to the target's position in the grid
-        /// Once it reaches the target, it'll automatically
-        /// change to the next node in the path
+        /// Move the entity along the set path
         /// </summary>
         /// <param name="deltaTime">The time influence</param>
         public void Move(float deltaTime = 1)
@@ -338,7 +361,7 @@ namespace Pacman
                         _targetNode.Indexes.Item1,
                         _targetNode.Indexes.Item2);
 
-                //feed on the path to continue moving
+                //try feed on the path to continue moving
                 if (_path.Count > 0)
                 {
                     _targetNode = _path[0];
