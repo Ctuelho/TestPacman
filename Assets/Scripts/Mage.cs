@@ -1,7 +1,4 @@
-﻿using Game;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Game
 {
@@ -10,6 +7,8 @@ namespace Game
         #region private fields
         [SerializeField]
         private Animator _animator;
+        [SerializeField]
+        private ParticleSystem _fireBallGlow;
         [SerializeField]
         private GameObject _lightningFieldPrefab;
         [SerializeField]
@@ -40,8 +39,16 @@ namespace Game
             {
                 _fireBallIsAvailable = false;
 
-                var fireball = Instantiate(_fireballPrefab).GetComponent<Fireball>();
-                fireball.Initialize(transform.position, MovementDirection);
+                var directions = System.Enum.GetValues(typeof(MovementDirections));
+                foreach(MovementDirections direction in directions)
+                {
+                    if(direction != MovementDirections.None)
+                    {
+                        var fireball = Instantiate(_fireballPrefab).GetComponent<Fireball>();
+                        fireball.Initialize(transform.position, direction);
+                    }
+                }
+                _fireBallGlow.Stop();
                 Invoke("EnableFireball", 5f);
             }
 
@@ -72,6 +79,7 @@ namespace Game
 
         private void EnableFireball()
         {
+            _fireBallGlow.Play();
             _fireBallIsAvailable = true;
         }
     }

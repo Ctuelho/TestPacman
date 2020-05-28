@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7491825857803422429}
   - component: {fileID: 7491825857803422431}
   - component: {fileID: 7491825857803422428}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Sparks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4765,7 +4765,7 @@ GameObject:
   - component: {fileID: 7491825858167125437}
   - component: {fileID: 7491825858167125439}
   - component: {fileID: 7491825858167125436}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Fog
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9521,7 +9521,7 @@ GameObject:
   - component: {fileID: 7491825859315224304}
   - component: {fileID: 7491825859315224309}
   - component: {fileID: 7743186194772876820}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: LightningTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}

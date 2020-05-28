@@ -2,7 +2,7 @@
 
 namespace Game
 {
-    public class Fireball : MonoBehaviour
+    public class Arrow : MonoBehaviour
     {
         [SerializeField]
         private Rigidbody2D _rigidbody;
@@ -15,16 +15,19 @@ namespace Game
             switch (direction)
             {
                 case MovementDirections.Up:
-                    velocity = Vector2.up * GameController.Instance.FIRE_BALL_SPEED;
+                    velocity = Vector2.up * GameController.Instance.ARROW_SPEED;
                     break;
                 case MovementDirections.Down:
-                    velocity = Vector2.down * GameController.Instance.FIRE_BALL_SPEED;
+                    velocity = Vector2.down * GameController.Instance.ARROW_SPEED;
+                    transform.rotation = Quaternion.Euler(new Vector3(0, 0, 180));
                     break;
                 case MovementDirections.Left:
-                    velocity = Vector2.left * GameController.Instance.FIRE_BALL_SPEED;
+                    velocity = Vector2.left * GameController.Instance.ARROW_SPEED;
+                    transform.rotation = Quaternion.Euler(new Vector3(0, 0, 90));
                     break;
                 case MovementDirections.Right:
-                    velocity = Vector2.right * GameController.Instance.FIRE_BALL_SPEED;
+                    velocity = Vector2.right * GameController.Instance.ARROW_SPEED;
+                    transform.rotation = Quaternion.Euler(new Vector3(0, 0, 270));
                     break;
             }
 

@@ -8,7 +8,7 @@ namespace Game
         #region properties
         public bool CanBeDamaged { get; protected set; } = true;
         public bool PowerUpIsActive { get; protected set; } = false;
-        public MovementDirection MovementDirection { get; private set; } = MovementDirection.Left;
+        public MovementDirections MovementDirection { get; private set; } = MovementDirections.Left;
         #endregion properties
 
         #region unity event functions
@@ -27,19 +27,19 @@ namespace Game
             var inputDirection = MovementDirection;
             if (Input.GetKey(KeyCode.UpArrow))
             {
-                inputDirection = MovementDirection.Up;
+                inputDirection = MovementDirections.Up;
             }
             else if (Input.GetKey(KeyCode.DownArrow))
             {
-                inputDirection = MovementDirection.Down;
+                inputDirection = MovementDirections.Down;
             }
             else if (Input.GetKey(KeyCode.LeftArrow))
             {
-                inputDirection = MovementDirection.Left;
+                inputDirection = MovementDirections.Left;
             }
             else if (Input.GetKey(KeyCode.RightArrow))
             {
-                inputDirection = MovementDirection.Right;
+                inputDirection = MovementDirections.Right;
             }
 
             //it means the entity has stopped
@@ -62,19 +62,19 @@ namespace Game
                     //calc the direction on grid coordinates for new input
                     switch (inputDirection)
                     {
-                        case MovementDirection.Up:
+                        case MovementDirections.Up:
                             xIndexShiftNewDirection = 0;
                             yIndexShiftNewDirection = 1;
                             break;
-                        case MovementDirection.Down:
+                        case MovementDirections.Down:
                             xIndexShiftNewDirection = 0;
                             yIndexShiftNewDirection = -1;
                             break;
-                        case MovementDirection.Left:
+                        case MovementDirections.Left:
                             xIndexShiftNewDirection = -1;
                             yIndexShiftNewDirection = 0;
                             break;
-                        case MovementDirection.Right:
+                        case MovementDirections.Right:
                             xIndexShiftNewDirection = 1;
                             yIndexShiftNewDirection = 0;
                             break;
@@ -105,19 +105,19 @@ namespace Game
                     //calc the direction on grid coordinates for new input
                     switch (MovementDirection)
                     {
-                        case MovementDirection.Up:
+                        case MovementDirections.Up:
                             xIndexShiftOldDirection = 0;
                             yIndexShiftOldDirection = 1;
                             break;
-                        case MovementDirection.Down:
+                        case MovementDirections.Down:
                             xIndexShiftOldDirection = 0;
                             yIndexShiftOldDirection = -1;
                             break;
-                        case MovementDirection.Left:
+                        case MovementDirections.Left:
                             xIndexShiftOldDirection = -1;
                             yIndexShiftOldDirection = 0;
                             break;
-                        case MovementDirection.Right:
+                        case MovementDirections.Right:
                             xIndexShiftOldDirection = 1;
                             yIndexShiftOldDirection = 0;
                             break;
@@ -138,11 +138,11 @@ namespace Game
                 }
             }
 
-            if (MovementDirection == MovementDirection.Left)
+            if (MovementDirection == MovementDirections.Left)
             {
                 transform.localScale = new Vector3(-1, 1, 1);
             }
-            else if (MovementDirection == MovementDirection.Right)
+            else if (MovementDirection == MovementDirections.Right)
             {
                 transform.localScale = new Vector3(1, 1, 1);
             }
@@ -159,7 +159,7 @@ namespace Game
         {
             base.Initialize(x, y);
 
-            MovementDirection = MovementDirection.Left;
+            MovementDirection = MovementDirections.Left;
             NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED);
         }
 

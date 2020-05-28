@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace Game
 {
@@ -6,12 +7,13 @@ namespace Game
     {
         #region private fields
         [SerializeField]
-        private SpriteRenderer _spriteRenderer;
+        private Animator _animator;
+        [SerializeField]
+        private GameObject _arrowPrefab;
         [SerializeField]
         private ParticleSystem _dodgeGlow;
-        [SerializeField]
-        private TrailRenderer _dodgeTrail;
         private bool _dodgeAvailable = true;
+        private Coroutine CastArrowsCoroutine;
         #endregion private fields
 
         protected override void Update()
@@ -26,26 +28,71 @@ namespace Game
                 NavEntity.SetSpeed(
                     GameController.Instance.PLAYER_DEFAULT_SPEED *
                     GameController.Instance.ELF_DODGE_SPEED);
-                _dodgeTrail.emitting = true;
                 _dodgeGlow.Stop();
-                _spriteRenderer.color = new Color(0, 1, 0, 0.5f);
-                Invoke("CompleteDodge", 0.2f);
+                _animator.SetInteger("state", (int)PlayerAnimationState.Action1);
+                Invoke("CompleteDodge", GameController.Instance.ELF_DODGE_DURATION);
             }
+        }
+
+        public override void EnablePowerUp()
+        {
+            base.EnablePowerUp();
+            CancelInvoke();
+            _animator.SetInteger("state", (int)PlayerAnimationState.Action2);
+            NavEntity.SetSpeed(
+                GameController.Instance.PLAYER_DEFAULT_SPEED *
+                GameController.Instance.KNIGHT_POWERUP_SPEED_MUL);
+            if (CastArrowsCoroutine != null)
+                StopCoroutine(CastArrows());
+            CastArrowsCoroutine = StartCoroutine(CastArrows());
+        }
+
+        public override void DisablePowerUp()
+        {
+            base.DisablePowerUp();
+            CancelInvoke();
+            EnableDodge();
+            _animator.SetInteger("state", (int)PlayerAnimationState.Idle);
+            NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED);
         }
 
         private void CompleteDodge()
         {
             CanBeDamaged = true;
-            _dodgeTrail.emitting = false;
             NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED);
-            _spriteRenderer.color = new Color(1, 1, 1, 1);
-            Invoke("EnableDodge", 5f);
+            _animator.SetInteger("state", (int)PlayerAnimationState.Idle);
+            Invoke("EnableDodge", GameController.Instance.SKILL_INTERVAL);
         }
 
         private void EnableDodge()
         {
             _dodgeAvailable = true;
             _dodgeGlow.Play();
+        }
+
+        IEnumerator CastArrows()
+        {
+            var timer = 0f;
+            while (PowerUpIsActive)
+            {
+                var directions = System.Enum.GetValues(typeof(MovementDirections));
+                foreach (MovementDirections direction in directions)
+                {
+                    if (direction != MovementDirections.None)
+                    {
+                        var arrow = Instantiate(_arrowPrefab).GetComponent<Arrow>();
+                        arrow.Initialize(transform.position, direction);
+                    }
+                }
+                
+                while(timer < GameController.Instance.ARROW_CAST_INTERVAL)
+                {
+                    timer += Time.deltaTime;
+                    yield return null;
+                }
+
+                timer = 0;
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
 namespace Game 
 {
     public enum Character {  Elf, Knight, Mage }
-    public enum MovementDirection { None, Up, Down, Left, Right }
+    public enum MovementDirections { None, Up, Down, Left, Right }
     public enum PelletType { None, Small, Big }
     public enum PlayerAnimationState { None = -1, Idle = 0, Action1 = 1, Action2 = 2, Dead = 3, Victory = 4 }
 

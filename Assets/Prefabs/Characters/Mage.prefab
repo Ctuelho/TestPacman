@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2281441128708584092}
   - component: {fileID: 7470338830057145428}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Storm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 8751794021880261152}
   - component: {fileID: 6443736192835271636}
   - component: {fileID: 3039989320866960154}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -196,8 +196,8 @@ GameObject:
   - component: {fileID: 3553019087611524437}
   - component: {fileID: 5842499346168333479}
   - component: {fileID: 160032229274158937}
-  m_Layer: 0
-  m_Name: MagicGlow
+  m_Layer: 10
+  m_Name: FireballGlow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1488,7 +1488,7 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 0.60784316, g: 0, b: 1, a: 1}
+        key0: {r: 1, g: 0, b: 1, a: 1}
         key1: {r: 1, g: 1, b: 1, a: 0}
         key2: {r: 0, g: 0, b: 0, a: 0}
         key3: {r: 0, g: 0, b: 0, a: 0}
@@ -4951,7 +4951,7 @@ GameObject:
   - component: {fileID: 7881199719561117112}
   - component: {fileID: 8887990053434810661}
   - component: {fileID: 374535095422210355}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Mage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5024,6 +5024,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _animator: {fileID: 3039989320866960154}
+  _fireBallGlow: {fileID: 5842499346168333479}
   _lightningFieldPrefab: {fileID: 7491825859315224305, guid: 25f4791dac1378d41b9cb9205ebe754a,
     type: 3}
   _fireballPrefab: {fileID: 5840691225496212153, guid: 7015481d7bc9fa148839b25da273b2f4,
@@ -5038,7 +5039,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6176384780453771138}
   - component: {fileID: 4406486024412624897}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: StormTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}

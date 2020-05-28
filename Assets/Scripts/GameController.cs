@@ -9,7 +9,6 @@ namespace Game
         #region consts
         public readonly int SMALL_PELLET_SCORE = 10;
         public readonly int BIG_PELLET_SCORE = 50;
-        public readonly float POWER_UP_DURATION = 4;
         #region speeds
         public readonly float PLAYER_DEFAULT_SPEED = 5;
         public readonly float ELF_DODGE_SPEED = 10;
@@ -17,9 +16,16 @@ namespace Game
         public readonly float KNIGHT_POWERUP_SPEED_MUL = 2.0f;
         public readonly float MAGE_POWERUP_SPEED_MUL = 1.5f;
         public readonly float GHOST_DEFAULT_SPEED = 3;
-        public readonly float FIRE_BALL_SPEED = 40;
-        public readonly float ARROW_SPEED = 50;
+        public readonly float FIRE_BALL_SPEED = 20;
+        public readonly float ARROW_SPEED = 25;
         #endregion speeds
+        #region intervals
+        public readonly float POWER_UP_DURATION = 4;
+        public readonly float SKILL_INTERVAL = 5f;
+        public readonly float ELF_DODGE_DURATION = 0.25f;
+        public readonly float KNIGHT_SLASH_DURATION = 0.5f;
+        public readonly float ARROW_CAST_INTERVAL = 0.25f;
+        #endregion intervals
         #endregion consts
 
         #region static fields

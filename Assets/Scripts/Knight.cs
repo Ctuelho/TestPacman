@@ -24,7 +24,7 @@ namespace Game
                 _slashAvailable = false;
                 _animator.SetInteger("state", (int)PlayerAnimationState.Action1);
                 _slashGlow.Stop();
-                Invoke("EndSlash", 0.5f);
+                Invoke("EndSlash", GameController.Instance.KNIGHT_SLASH_DURATION);
             }
         }
 
@@ -50,7 +50,7 @@ namespace Game
         private void EndSlash()
         {
             _animator.SetInteger("state", (int)PlayerAnimationState.Idle);
-            Invoke("EnableSlash", 5f);
+            Invoke("EnableSlash", GameController.Instance.SKILL_INTERVAL);
         }
 
         private void EnableSlash()
