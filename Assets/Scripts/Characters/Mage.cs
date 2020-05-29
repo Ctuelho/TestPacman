@@ -14,7 +14,6 @@ namespace Game
         [SerializeField]
         private GameObject _fireballPrefab;
         private Vector2 _lastNodeIndexes;
-        private List<GameObject> _sparkles;
         #endregion private fields
 
         #region unity event functions
@@ -33,7 +32,6 @@ namespace Game
                     //spawn a lightning field
                     var lightningField = Instantiate(_lightningFieldPrefab);
                     lightningField.transform.position = transform.position;
-                    _sparkles.Add(lightningField);
                     _lastNodeIndexes = new Vector2(
                             NavEntity.LastIndexes.Item1,
                             NavEntity.LastIndexes.Item2);
@@ -71,19 +69,7 @@ namespace Game
                  GameController.Instance.MAGE_POWERUP_SPEED_MUL);
             _lastNodeIndexes = new Vector2(
                             NavEntity.LastIndexes.Item1,
-                            NavEntity.LastIndexes.Item2);
-            
-            if(_sparkles == null)
-            {
-                _sparkles = new List<GameObject>();
-            }
-            else
-            {
-                while(_sparkles.Count > 0)
-                {
-                    Destroy(_sparkles[0]);
-                }
-            }
+                            NavEntity.LastIndexes.Item2);     
         }
 
         public override void DisablePowerUp()

@@ -264,7 +264,9 @@ namespace Game
                     if (Input.GetKeyDown(KeyCode.Return))
                     {
                         //play again
-                        SetState(GameStates.Playing);
+                        RefreshHUD();
+                        RefreshLevel();
+                        SetState(GameStates.CountingDownStart);
                     }
                     else if (Input.GetKeyDown(KeyCode.Escape))
                     {
