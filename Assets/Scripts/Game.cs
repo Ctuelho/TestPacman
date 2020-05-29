@@ -2,11 +2,14 @@
 
 namespace Game 
 {
-    public enum Character {  Elf, Knight, Mage }
+    public enum Characters {  Elf, Knight, Mage }
     public enum MovementDirections { None, Up, Down, Left, Right }
-    public enum PelletType { None, Small, Big }
+    public enum PelletTypes { None, Small, Big, Bonus }
     public enum AnimationStates { None = -1, Idle = 0, Action1 = 1, Action2 = 2, Dead = 3, Victory = 4, Ghost = 5, Hurt = 6 }
     public enum EnemyActionState { None, Waiting, Following, Fleeing, Dead };
+    public enum EnemyTypes { None, Zombie, Goblim, Ogre, Necromancer };
+
+    public enum GameStates { None, MainMenu, CountingDownStart, Playing, Paused, GameOver, LevelCleared }
 
     public class Navigator : MonoBehaviour
     {

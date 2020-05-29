@@ -5,7 +5,7 @@ namespace Game
     public class Pellet : Collectable
     {
         #region public fields
-        public PelletType PelletType;
+        public PelletTypes PelletType;
         #endregion public fields
 
         #region public functions

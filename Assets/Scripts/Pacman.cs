@@ -57,6 +57,7 @@ namespace Pacman
         public NavNode WarperDown;
         public NavNode WarperLeft;
         public NavNode WarperRight;
+        public NavNode EnemyExitTargetNode;
         public int maxX;
         public int maxY;
         #endregion NavGraph public fields
@@ -325,22 +326,32 @@ namespace Pacman
         public Tuple<float, float> Position { get; private set; }
         public Tuple<int, int> LastIndexes { get; private set; }
         public NavNode TargetNode { get; private set; }
+        public float Speed { get; private set; } = 1f;
         #endregion NavEntity properties
 
         #region NavEntity private fields
-        private float _speed = 1f;
+        private float _speedMod = 1f;
         private Tuple<float, float> _lastPosition;
         private List<NavNode> _path;
         #endregion NavEntity private fields
 
         #region NavEntity set functions
         /// <summary>
-        /// Sets the entity's movement speed multiplier
+        /// Sets the entity's movement speed on the grid, not on the world
         /// </summary>
-        /// <param name="speed"></param>
+        /// <param name="speed">The speed</param>
         public void SetSpeed(float speed)
         {
-            _speed = speed;
+            Speed = speed;
+        }
+
+        /// <summary>
+        /// Sets an influence value over the speed
+        /// </summary>
+        /// <param name="mod">A multiplier for the speed</param>
+        public void SetSpeedMod(float mod)
+        {
+            _speedMod = mod;
         }
 
         /// <summary>
@@ -420,8 +431,8 @@ namespace Pacman
             IsMoving = true;
 
             //calc this frame's translation
-            float deltaX = (TargetNode.Indexes.Item1 - _lastPosition.Item1) * deltaTime * _speed;
-            float deltaY = (TargetNode.Indexes.Item2 - _lastPosition.Item2) * deltaTime * _speed;
+            float deltaX = (TargetNode.Indexes.Item1 - _lastPosition.Item1) * deltaTime * Speed * _speedMod;
+            float deltaY = (TargetNode.Indexes.Item2 - _lastPosition.Item2) * deltaTime * Speed * _speedMod;
             var deltaPos = new Tuple<float, float>(deltaX, deltaY);
 
             //apply the translation to current position and fix it compared to last position

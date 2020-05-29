@@ -9,6 +9,7 @@ namespace Game
     {
         #region properties
         public Pacman.NavGraph NavGraph { get; private set; }
+        public List<Collectable> Collectables { get; private set; }
         #endregion properties
 
         #region private fields
@@ -17,8 +18,9 @@ namespace Game
         [SerializeField]
         private GameObject _bigPelletPrefab;
         [SerializeField]
+        private GameObject _bonusPelletPrefab;
+        [SerializeField]
         private Tilemap _tilemap;
-        List<Collectable> _collectables;
         #endregion private fields
 
         #region unity event functions
@@ -36,7 +38,7 @@ namespace Game
 
         public Collectable GetCollectable(int indexX, int indexY)
         {
-            return _collectables.Where(c => c.Index.x == indexX && c.Index.y == indexY).FirstOrDefault();
+            return Collectables.Where(c => c.Index.x == indexX && c.Index.y == indexY).FirstOrDefault();
         }
         #endregion public functions
 
@@ -47,7 +49,7 @@ namespace Game
         /// </summary>
         private void MountLevel()
         {
-            _collectables = new List<Collectable>();
+            Collectables = new List<Collectable>();
 
             //iterates through all tiles and create nodes in the graph
             //and elements int he level based on the tile's poisition 
@@ -69,10 +71,10 @@ namespace Game
                         NavGraph.AddNavNode(navNode);
 
                         var pellet = Instantiate(_pelletPrefab).GetComponent<Pellet>();
-                        pellet.PelletType = PelletType.Small;
+                        pellet.PelletType = PelletTypes.Small;
                         pellet.transform.position = _tilemap.GetCellCenterWorld(tilePosition);
                         pellet.Index = new Vector2(tilePosition.x, tilePosition.y);
-                        _collectables.Add(pellet);
+                        Collectables.Add(pellet);
                     }
                     else if (tile.name.Equals("bigPelletTile"))
                     {
@@ -83,10 +85,10 @@ namespace Game
                         NavGraph.AddNavNode(navNode);
 
                         var bigPellet = Instantiate(_bigPelletPrefab).GetComponent<Pellet>();
-                        bigPellet.PelletType = PelletType.Big;
+                        bigPellet.PelletType = PelletTypes.Big;
                         bigPellet.transform.position = _tilemap.GetCellCenterWorld(tilePosition);
                         bigPellet.Index = new Vector2(tilePosition.x, tilePosition.y);
-                        _collectables.Add(bigPellet);
+                        Collectables.Add(bigPellet);
                     }
                     else if (tile.name.Equals("emptyTile"))
                     {
@@ -104,6 +106,12 @@ namespace Game
                         NavGraph.BonusPointNode = navNode;
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
+
+                        var bonusPellet = Instantiate(_bonusPelletPrefab).GetComponent<Pellet>();
+                        bonusPellet.PelletType = PelletTypes.Bonus;
+                        bonusPellet.transform.position = _tilemap.GetCellCenterWorld(tilePosition);
+                        bonusPellet.Index = new Vector2(tilePosition.x, tilePosition.y);
+                        Collectables.Add(bonusPellet);
                     }
                     else if (tile.name.Equals("playerTile"))
                     {
@@ -194,7 +202,16 @@ namespace Game
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }
+                    else if (tile.name.Equals("EnemyExitTile"))
+                    {
+                        clearColor = true;
 
+                        navNode.NodeType = Pacman.NodeType.Normal;
+                        NavGraph.EnemyExitTargetNode = navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    
                     if (clearColor)
                     {
                         _tilemap.SetTileFlags(tilePosition, TileFlags.None);

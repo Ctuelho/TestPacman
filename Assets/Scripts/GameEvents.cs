@@ -25,7 +25,7 @@ namespace Game
         #region args
         public class PelletCollectedEventArgs : EventArgs
         {
-            public PelletType PelletType;
+            public PelletTypes PelletType;
         }
         public class PowerUpActiveEventArgs : EventArgs 
         {
@@ -43,6 +43,10 @@ namespace Game
             public bool SkillStatus;
         }
         public class OnPlayerUsedSkillEventArgs : EventArgs {}
+        public class OnEnemyDeadEventArgs : EventArgs 
+        {
+            public EnemyTypes EnemyType;
+        }
         #endregion args
 
         #region handlers
@@ -53,6 +57,7 @@ namespace Game
         public event EventHandler<GhostEatenEventArgs> GhostEaten;
         public event EventHandler<PlayerWalkedTileEventArgs> PlayerWalkedTile;
         public event EventHandler<OnPlayerUsedSkillEventArgs> PlayerUsedSkill;
+        public event EventHandler<OnEnemyDeadEventArgs> EnemyDead;
         #endregion handlers
 
         #region events
@@ -89,6 +94,11 @@ namespace Game
         public void OnPlayerUsedSkill(OnPlayerUsedSkillEventArgs args)
         {
             PlayerUsedSkill?.Invoke(this, args);
+        }
+
+        public void OnEnemyDead(OnEnemyDeadEventArgs args)
+        {
+            EnemyDead?.Invoke(this, args);
         }
         #endregion events
     }

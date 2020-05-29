@@ -7,6 +7,7 @@ namespace Game
     public class Enemy : Navigator
     {
         #region properties 
+        public EnemyTypes EnemyType { get; protected set; } = EnemyTypes.None;
         public bool CanDamage { get; protected set; } = true;
         public bool CanBeDamaged { get; protected set; } = true;
         public bool IsDead { get; protected set; } = false;
@@ -45,7 +46,8 @@ namespace Game
             }
             else if (collision.gameObject.layer == GameController.Instance.PLAYER_LAYER)
             {
-                GameEvents.Instance.OnPlayerDamaged(new GameEvents.PlayerDamagedEventArgs());
+                if(CanDamage)
+                    GameEvents.Instance.OnPlayerDamaged(new GameEvents.PlayerDamagedEventArgs());
             }
         }
         #endregion unity event functions
@@ -92,6 +94,7 @@ namespace Game
             IsDead = true;
             _animator.SetInteger("state", (int)AnimationStates.Dead);
             Invoke("RecoverFromDeathAnimation", GameController.Instance.DEATH_ANIMATION_INTERVAL);
+            GameEvents.Instance.OnEnemyDead(new GameEvents.OnEnemyDeadEventArgs { EnemyType = EnemyType });
         }
 
         private void RecoverFromDeathAnimation()
@@ -101,6 +104,11 @@ namespace Game
         #endregion private functions
 
         #region public functions
+        public void SetEnemyType(EnemyTypes enemyType)
+        {
+            EnemyType = enemyType;
+        }
+
         public override void Initialize(int x, int y)
         {
             base.Initialize(x, y);
@@ -127,6 +135,9 @@ namespace Game
         #region event listeners
         protected virtual void OnPowerActiveUpListener(object sender, GameEvents.PowerUpActiveEventArgs args)
         {
+            if (IsDead)
+                return;
+
             if (args.PowerUpStatus)
             {
                 CanDamage = false;

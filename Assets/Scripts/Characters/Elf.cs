@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game
@@ -10,7 +11,7 @@ namespace Game
         private GameObject _arrowPrefab;
         [SerializeField]
         private ParticleSystem _dodgeGlow;
-        private Vector2 _lastNodeIndexes;
+        private Coroutine _fireKnivesCoroutine;
         #endregion private fields
 
         #region unity event functions
@@ -21,24 +22,7 @@ namespace Game
                 return;
             }
 
-            if (PowerUpIsActive && NavEntity.CanMove && NavEntity.ReachedDestination)
-            {
-                if (_lastNodeIndexes.x != NavEntity.LastIndexes.Item1 ||
-                    _lastNodeIndexes.y != NavEntity.LastIndexes.Item2)
-                {
-                    var directions = System.Enum.GetValues(typeof(MovementDirections));
-                    foreach (MovementDirections direction in directions)
-                    {
-                        if (direction != MovementDirections.None)
-                        {
-                            var arrow = Instantiate(_arrowPrefab).GetComponent<Arrow>();
-                            arrow.Initialize(transform.position, direction);
-                        }
-                    }
-                }
-            }
-
-            if(Input.GetKeyDown(KeyCode.Space) && SkillIsReady)
+            if (Input.GetKeyDown(KeyCode.Space) && SkillIsReady && !PowerUpIsActive)
             {
                 //perform dodge
                 CanBeDamaged = false;
@@ -59,7 +43,12 @@ namespace Game
         public override void EnablePowerUp()
         {
             base.EnablePowerUp();
-            _animator.SetInteger("state", (int)AnimationStates.Action2);  
+            NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED *
+                                    GameController.Instance.ELF_POWERUP_SPEED_MUL);
+            _animator.SetInteger("state", (int)AnimationStates.Action2);
+            if (_fireKnivesCoroutine != null)
+                StopCoroutine(_fireKnivesCoroutine);
+            _fireKnivesCoroutine = StartCoroutine(FireKnives());
         }
 
         public override void DisablePowerUp()
@@ -67,11 +56,13 @@ namespace Game
             base.DisablePowerUp();
             _animator.SetInteger("state", (int)AnimationStates.Idle);
             NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED);
+            if (_fireKnivesCoroutine != null)
+                StopCoroutine(_fireKnivesCoroutine);
         }
 
         public override void EnableSkill()
         {
-            base.EnableSkill(); 
+            base.EnableSkill();
             _dodgeGlow.Play();
         }
 
@@ -91,18 +82,44 @@ namespace Game
         #region private functions
         private void CompleteDodge()
         {
-            NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED);
             if (PowerUpIsActive)
             {
-                _animator.SetInteger("state", (int)AnimationStates.Action2);
+                NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED *
+                                    GameController.Instance.ELF_POWERUP_SPEED_MUL);
             }
             else
             {
+                NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED);
                 _animator.SetInteger("state", (int)AnimationStates.Idle);
                 CanBeDamaged = true;
             }
         }
+        #endregion private functions
+
+        #region coroutines
+        IEnumerator FireKnives()
+        {
+            var timer = 0f;
+            while (PowerUpIsActive)
+            {
+                timer += Time.deltaTime;
+                if (timer >= GameController.Instance.ARROW_CAST_INTERVAL)
+                {
+                    timer -= GameController.Instance.ARROW_CAST_INTERVAL;
+                    var directions = System.Enum.GetValues(typeof(MovementDirections));
+                    foreach (MovementDirections direction in directions)
+                    {
+                        if (direction != MovementDirections.None)
+                        {
+                            var arrow = Instantiate(_arrowPrefab).GetComponent<Arrow>();
+                            arrow.Initialize(transform.position, direction);
+                        }
+                    }
+                }
+                yield return null;
+            }
+        }
+        #endregion coroutines
     }
-    #endregion private functions
 }
 

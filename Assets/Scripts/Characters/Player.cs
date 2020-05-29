@@ -157,7 +157,10 @@ namespace Game
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            
+            if (collision.gameObject.layer == GameController.Instance.ENEMIES_SPELLS_LAYER)
+            {
+                GameEvents.Instance.OnPlayerDamaged(new GameEvents.PlayerDamagedEventArgs());
+            }
         }
         #endregion unity event functions  
 
@@ -166,8 +169,26 @@ namespace Game
         {
             base.Initialize(x, y);
 
+            CanBeDamaged = false;
+            IsDead = false;
+            CancelInvoke();
+            NavEntity.DisableMoving();
+            DisablePowerUp();
+            _animator.SetInteger("state", (int)AnimationStates.Idle);
             MovementDirection = MovementDirections.Left;
             NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED);
+        }
+
+        public void SetCanBeDamaged(bool allowed)
+        {
+            if (PowerUpIsActive)
+            {
+                CanBeDamaged = false;
+            }
+            else
+            {
+                CanBeDamaged = allowed;
+            }
         }
 
         public virtual void EnablePowerUp()
