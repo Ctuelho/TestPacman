@@ -114,7 +114,7 @@ GameObject:
   - component: {fileID: 8845820951598578839}
   - component: {fileID: 1995859095728394492}
   - component: {fileID: 6054781479381828702}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: Sword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -208,7 +208,7 @@ CircleCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0.1}
@@ -5052,8 +5052,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5cb0673e099c784cb7382c067600ef5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _spriteRenderer: {fileID: 6443736192835271636}
   _animator: {fileID: 3039989320866960154}
+  _spriteRenderer: {fileID: 6443736192835271636}
   _slashGlow: {fileID: 5842499346168333479}
 --- !u!1 &8595004511247179763
 GameObject:
@@ -5065,7 +5065,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6176384780453771138}
   - component: {fileID: 4406486024412624897}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: SlashTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}

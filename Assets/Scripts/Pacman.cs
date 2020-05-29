@@ -19,7 +19,8 @@ namespace Pacman
         WarperUp,
         WarperDown,
         WarperLeft,
-        WarperRight
+        WarperRight,
+        NonWalkable
     }
 
     public class NavNode
@@ -153,8 +154,9 @@ namespace Pacman
         /// </summary>
         /// <param name="from">The starting node</param>
         /// <param name="to">The target node</param>
+        /// /// <param name="exclude">Nodes of the types in the list won't be considered</param>
         /// <returns>A list containing the shortest path between the given nodes</returns>
-        public List<NavNode> ShortestPath(NavNode from, NavNode to)
+        public List<NavNode> ShortestPath(NavNode from, NavNode to, List<NodeType> exclude = null)
         {
             List<NavNode> result = new List<NavNode>();
 
@@ -189,6 +191,10 @@ namespace Pacman
                     if (neighbor == null || neighbor.Visited)
                         continue;
 
+                    //ignore neighbor if it matches any exluded type
+                    if (exclude != null && exclude.Contains(neighbor.NodeType))
+                        continue;
+
                     //cumulative distance from the starting node
                     int distance = currentNode.Distance + 1;
                     if(distance < neighbor.Distance)
@@ -217,14 +223,93 @@ namespace Pacman
         }
 
         /// <summary>
-        /// 
+        /// Uses a modification of Dijkstra Shortest Path Algorithm to find 
+        /// the farthest path away from the target node, relative to the
+        /// "from" node
         /// </summary>
-        /// <param name="from"></param>
-        /// <returns></returns>
-        public List<NavNode> FarestPath(NavNode from)
+        /// <param name="from">The starting node</param>
+        /// <param name="target">The target node to run way from</param>
+        /// /// <param name="exclude">Nodes of the types in the list won't be considered</param>
+        /// <returns>A list containing the shortest path between the given nodes</returns>
+        public List<NavNode> FarthestPath(NavNode from, NavNode target, List<NodeType> exclude = null)
         {
             List<NavNode> result = new List<NavNode>();
-            return result;
+
+            //limits the path size for performance
+            const int maxSize = 10;
+            int greatestDistance = 0;
+
+            //mark all nodes as unvisited
+            //set the distance to "- infinity"
+            //and clear the path
+            foreach (var node in Nodes)
+            {
+                node.Visited = false;
+                node.Distance = int.MinValue;
+                node.PreviousNodeInPath = null;
+            }
+
+            //set the from node distance to 0
+            from.Distance = 0;
+
+            //the current node, set it to "from"
+            NavNode currentNode = from;
+
+            //number of nodes yet to be visited - target
+            int nodesToBeVisited = Nodes.Count - 1;
+
+            //iterate trhough the nodes until the
+            //"to" node is visited
+            while (nodesToBeVisited > 0 || greatestDistance < maxSize)
+            {
+                //mark current node as visited
+                //and remove a node to be visited
+                currentNode.Visited = true;
+
+                nodesToBeVisited--;
+
+                //calc the distance to the neighbors
+                foreach (var neighbor in currentNode.Neighbors)
+                {
+                    //if the neighbor is already visited, ignore it
+                    if (neighbor == null || neighbor.Visited)
+                        continue;
+
+                    //ignore target
+                    if (neighbor == target)
+                        continue;
+
+                    //ignore neighbor if it matches any exluded type
+                    if (exclude != null && exclude.Contains(neighbor.NodeType))
+                        continue;
+
+                    //cumulative distance from the starting node
+                    int distance = currentNode.Distance + 1;
+                    if (distance > neighbor.Distance)
+                    {
+                        neighbor.Distance = distance;
+                        neighbor.PreviousNodeInPath = currentNode;
+                        if (distance > greatestDistance)
+                            greatestDistance = distance;
+                    }
+                }
+
+                //change the current node to the non-visited
+                //node with the greatest distance
+                currentNode = Nodes.Where(n => !n.Visited && n != target).OrderByDescending(n => n.Distance).FirstOrDefault();
+            }
+
+            //fill the result starting from the node with greatest distance
+            currentNode = Nodes.Where(n => n != target).OrderByDescending(n => n.Distance).FirstOrDefault();
+            while (greatestDistance > 0)
+            {
+                greatestDistance--;
+                result.Add(currentNode.PreviousNodeInPath);
+                currentNode = currentNode.PreviousNodeInPath;
+            }
+
+            result.Reverse();
+            return result.ToList();
         }
         #endregion NavGraph public functions
     }
@@ -239,13 +324,13 @@ namespace Pacman
         public bool IsMoving { get; private set; } = false;
         public Tuple<float, float> Position { get; private set; }
         public Tuple<int, int> LastIndexes { get; private set; }
+        public NavNode TargetNode { get; private set; }
         #endregion NavEntity properties
 
         #region NavEntity private fields
         private float _speed = 1f;
         private Tuple<float, float> _lastPosition;
         private List<NavNode> _path;
-        private NavNode _targetNode;
         #endregion NavEntity private fields
 
         #region NavEntity set functions
@@ -288,9 +373,9 @@ namespace Pacman
                 return;
 
             _path = path;
-            if (_targetNode == null)
+            if (TargetNode == null)
             {
-                _targetNode = path[0];
+                TargetNode = path[0];
                 path.RemoveAt(0);
             }
 
@@ -324,7 +409,7 @@ namespace Pacman
         public void Move(float deltaTime = 1)
         {
             //there is no path to follow
-            if (!CanMove || _targetNode == null || _path == null)
+            if (!CanMove || TargetNode == null || _path == null)
             {
                 ReachedDestination = true;
                 IsMoving = false;
@@ -335,8 +420,8 @@ namespace Pacman
             IsMoving = true;
 
             //calc this frame's translation
-            float deltaX = (_targetNode.Indexes.Item1 - _lastPosition.Item1) * deltaTime * _speed;
-            float deltaY = (_targetNode.Indexes.Item2 - _lastPosition.Item2) * deltaTime * _speed;
+            float deltaX = (TargetNode.Indexes.Item1 - _lastPosition.Item1) * deltaTime * _speed;
+            float deltaY = (TargetNode.Indexes.Item2 - _lastPosition.Item2) * deltaTime * _speed;
             var deltaPos = new Tuple<float, float>(deltaX, deltaY);
 
             //apply the translation to current position and fix it compared to last position
@@ -345,7 +430,7 @@ namespace Pacman
                 Math.Abs(pos.Item2 - _lastPosition.Item2) > 1)
             {
                 //snap it to the target node
-                Position = new Tuple<float, float>(_targetNode.Indexes.Item1, _targetNode.Indexes.Item2);
+                Position = new Tuple<float, float>(TargetNode.Indexes.Item1, TargetNode.Indexes.Item2);
             }
             else
             {
@@ -353,23 +438,23 @@ namespace Pacman
             }
 
             //check if reached target position
-            if (_targetNode.Indexes.Item1 == Position.Item1 &&
-                _targetNode.Indexes.Item2 == Position.Item2)
+            if (TargetNode.Indexes.Item1 == Position.Item1 &&
+                TargetNode.Indexes.Item2 == Position.Item2)
             {
-                _lastPosition = new Tuple<float, float>(_targetNode.Indexes.Item1, _targetNode.Indexes.Item2);
+                _lastPosition = new Tuple<float, float>(TargetNode.Indexes.Item1, TargetNode.Indexes.Item2);
                 LastIndexes = new Tuple<int, int>(
-                        _targetNode.Indexes.Item1,
-                        _targetNode.Indexes.Item2);
+                        TargetNode.Indexes.Item1,
+                        TargetNode.Indexes.Item2);
 
                 //try feed on the path to continue moving
                 if (_path.Count > 0)
                 {
-                    _targetNode = _path[0];
+                    TargetNode = _path[0];
                     _path.RemoveAt(0);
                 }
                 else
                 {
-                    _targetNode = null;
+                    TargetNode = null;
                     ReachedDestination = true;
                     IsMoving = false;
                 }

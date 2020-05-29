@@ -1,8 +1,5 @@
-﻿using Game;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -186,6 +183,14 @@ namespace Game
 
                         navNode.NodeType = Pacman.NodeType.WarperRight;
                         NavGraph.WarperRight= navNode;
+                        navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
+                        NavGraph.AddNavNode(navNode);
+                    }
+                    else if (tile.name.Equals("nonPlayableTile"))
+                    {
+                        clearColor = true;
+
+                        navNode.NodeType = Pacman.NodeType.NonWalkable;
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }

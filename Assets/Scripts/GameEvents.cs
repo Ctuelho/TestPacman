@@ -27,21 +27,32 @@ namespace Game
         {
             public PelletType PelletType;
         }
-
-        public class OnPlayerDamagedEventArgs : EventArgs {}
-        public class OnGhostEatenEventArgs : EventArgs {}
-        public class OnPlayerWalkedTileEventArgs : EventArgs 
+        public class PowerUpActiveEventArgs : EventArgs 
+        {
+            public bool PowerUpStatus;
+        }
+        public class PlayerDamagedEventArgs : EventArgs {}
+        public class GhostEatenEventArgs : EventArgs {}
+        public class PlayerWalkedTileEventArgs : EventArgs 
         {
             public int indexX;
             public int indexY;
         }
+        public class SkillActiveEventArgs : EventArgs 
+        {
+            public bool SkillStatus;
+        }
+        public class OnPlayerUsedSkillEventArgs : EventArgs {}
         #endregion args
 
         #region handlers
         public event EventHandler<PelletCollectedEventArgs> PelletCollected;
-        public event EventHandler<OnPlayerDamagedEventArgs> PlayerDamaged;
-        public event EventHandler<OnGhostEatenEventArgs> GhostEaten;
-        public event EventHandler<OnPlayerWalkedTileEventArgs> PlayerWalkedTile;
+        public event EventHandler<PowerUpActiveEventArgs> PowerUpActive;
+        public event EventHandler<SkillActiveEventArgs> SkillActive;
+        public event EventHandler<PlayerDamagedEventArgs> PlayerDamaged;
+        public event EventHandler<GhostEatenEventArgs> GhostEaten;
+        public event EventHandler<PlayerWalkedTileEventArgs> PlayerWalkedTile;
+        public event EventHandler<OnPlayerUsedSkillEventArgs> PlayerUsedSkill;
         #endregion handlers
 
         #region events
@@ -50,19 +61,34 @@ namespace Game
             PelletCollected?.Invoke(this, args);
         }
 
-        public void OnPlayerDamaged(OnPlayerDamagedEventArgs args)
+        public void OnPowerUpActive(PowerUpActiveEventArgs args)
+        {
+            PowerUpActive?.Invoke(this, args);
+        }
+
+        public void OnSkillActive(SkillActiveEventArgs args)
+        {
+            SkillActive?.Invoke(this, args);
+        }
+
+        public void OnPlayerDamaged(PlayerDamagedEventArgs args)
         {
             PlayerDamaged?.Invoke(this, args);
         }
 
-        public void OnGhostEaten(OnGhostEatenEventArgs args)
+        public void OnGhostEaten(GhostEatenEventArgs args)
         {
             GhostEaten?.Invoke(this, args);
         }
 
-        public void OnPlayerWalkedTile(OnPlayerWalkedTileEventArgs args)
+        public void OnPlayerWalkedTile(PlayerWalkedTileEventArgs args)
         {
             PlayerWalkedTile?.Invoke(this, args);
+        }
+
+        public void OnPlayerUsedSkill(OnPlayerUsedSkillEventArgs args)
+        {
+            PlayerUsedSkill?.Invoke(this, args);
         }
         #endregion events
     }

@@ -5,7 +5,8 @@ namespace Game
     public enum Character {  Elf, Knight, Mage }
     public enum MovementDirections { None, Up, Down, Left, Right }
     public enum PelletType { None, Small, Big }
-    public enum PlayerAnimationState { None = -1, Idle = 0, Action1 = 1, Action2 = 2, Dead = 3, Victory = 4 }
+    public enum AnimationStates { None = -1, Idle = 0, Action1 = 1, Action2 = 2, Dead = 3, Victory = 4, Ghost = 5, Hurt = 6 }
+    public enum EnemyActionState { None, Waiting, Following, Fleeing, Dead };
 
     public class Navigator : MonoBehaviour
     {
@@ -18,7 +19,7 @@ namespace Game
             Initialized = true;
             NavEntity = new Pacman.NavEntity();
             NavEntity.SetCurrentPosition(x, y);
-            NavEntity.SetSpeed(5);
+            NavEntity.SetSpeed(1);
             NavEntity.EnableMoving();
         }
     }
