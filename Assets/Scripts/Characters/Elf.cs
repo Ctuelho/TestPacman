@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game
@@ -32,6 +31,24 @@ namespace Game
                 _animator.SetInteger("state", (int)AnimationStates.Action1);
                 Invoke("CompleteDodge", GameController.Instance.ELF_DODGE_DURATION);
 
+                MovementDirections oppositeDirection = MovementDirections.None;
+                switch (MovementDirection)
+                {
+                    case MovementDirections.Up:
+                        oppositeDirection = MovementDirections.Down;
+                        break;
+                    case MovementDirections.Down:
+                        oppositeDirection = MovementDirections.Up;
+                        break;
+                    case MovementDirections.Left:
+                        oppositeDirection = MovementDirections.Right;
+                        break;
+                    case MovementDirections.Right:
+                        oppositeDirection = MovementDirections.Left;
+                        break;
+                }
+                var arrow = Instantiate(_arrowPrefab).GetComponent<Arrow>();
+                arrow.Initialize(transform.position, oppositeDirection);
                 GameEvents.Instance.OnPlayerUsedSkill(new GameEvents.OnPlayerUsedSkillEventArgs());
             }
 
@@ -84,8 +101,9 @@ namespace Game
         {
             if (PowerUpIsActive)
             {
-                NavEntity.SetSpeed(GameController.Instance.PLAYER_DEFAULT_SPEED *
-                                    GameController.Instance.ELF_POWERUP_SPEED_MUL);
+                NavEntity.SetSpeed(
+                    GameController.Instance.PLAYER_DEFAULT_SPEED *
+                    GameController.Instance.ELF_POWERUP_SPEED_MUL);
             }
             else
             {
