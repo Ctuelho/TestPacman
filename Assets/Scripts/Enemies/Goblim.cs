@@ -9,8 +9,9 @@ namespace Game
         #endregion private fields
 
         #region unity event functions
-        private void Update()
+        protected override void Update()
         {
+            base.Update();
             Debug.Log(transform.position);
             if (Spawned)
             {

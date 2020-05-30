@@ -20,8 +20,9 @@ namespace Game
 
         #region unity event functions
         // Update is called once per frame
-        protected virtual void Update()
+        protected override void Update()
         {
+            base.Update();
             //player moves on tile per time
 
             if (!Initialized)

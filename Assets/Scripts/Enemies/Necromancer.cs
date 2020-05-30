@@ -11,8 +11,9 @@ namespace Game
         #endregion private fields
 
         #region unity event functions
-        void Update()
+        protected override void Update()
         {
+            base.Update();
             if (Spawned)
             {
                 switch (ActionState)

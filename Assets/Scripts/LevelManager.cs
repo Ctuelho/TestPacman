@@ -158,39 +158,39 @@ namespace Game
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }
-                    else if (tile.name.Equals("warperTileDown"))
+                    else if (tile.name.Equals("warperDown"))
                     {
-                        clearColor = true;
+                        //clearColor = true;
 
                         navNode.NodeType = Pacman.NodeType.WarperDown;
                         NavGraph.WarperDown = navNode;
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }
-                    else if (tile.name.Equals("warperTileUp"))
+                    else if (tile.name.Equals("warperUp"))
                     {
-                        clearColor = true;
+                        //clearColor = true;
 
                         navNode.NodeType = Pacman.NodeType.WarperUp;
                         NavGraph.WarperUp = navNode;
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }
-                    else if (tile.name.Equals("warperTileLeft"))
+                    else if (tile.name.Equals("warperLeft"))
                     {
-                        clearColor = true;
+                        //clearColor = true;
 
                         navNode.NodeType = Pacman.NodeType.WarperLeft;
                         NavGraph.WarperLeft = navNode;
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }
-                    else if (tile.name.Equals("warperTileRight"))
+                    else if (tile.name.Equals("warperRight"))
                     {
-                        clearColor = true;
+                        //clearColor = true;
 
                         navNode.NodeType = Pacman.NodeType.WarperRight;
-                        NavGraph.WarperRight= navNode;
+                        NavGraph.WarperRight = navNode;
                         navNode.Indexes = new System.Tuple<int, int>(tilePosition.x, tilePosition.y);
                         NavGraph.AddNavNode(navNode);
                     }
@@ -219,6 +219,13 @@ namespace Game
                     }
                 }
             }
+
+
+            //link warp nodes
+            NavGraph.WarperLeft.Left = NavGraph.WarperRight;
+            NavGraph.WarperRight.Right = NavGraph.WarperLeft;
+            NavGraph.WarperUp.Up = NavGraph.WarperDown;
+            NavGraph.WarperDown.Down = NavGraph.WarperUp;
         }
         #endregion level montage
     }

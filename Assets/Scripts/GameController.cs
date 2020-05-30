@@ -24,8 +24,8 @@ namespace Game
         public readonly float KNIGHT_POWERUP_SPEED_MUL = 1.75f;
         public readonly float MAGE_POWERUP_SPEED_MUL = 1.5f;
         public readonly float ENEMY_SLOW_SPEED = 4;
-        public readonly float ENEMY_MEDIUM_SPEED = 5;
-        public readonly float ENEMY_HIGH_SPEED = 6;
+        public readonly float ENEMY_MEDIUM_SPEED = 4.75f;
+        public readonly float ENEMY_HIGH_SPEED = 5.5f;
         public readonly float FIRE_BALL_SPEED = 20;
         public readonly float ARROW_SPEED = 30;
         public readonly float NECRO_MAGIC_SPEED = 9;
@@ -147,6 +147,7 @@ namespace Game
             GameEvents.Instance.PlayerUsedSkill += OnPlayerUsedSkillEventListener;
             GameEvents.Instance.PlayerDamaged += OnPlayerDamagedEventListener;
             GameEvents.Instance.EnemyDead += OnEnemyDeadListener;
+            GameEvents.Instance.NavigatorWalkedTile += OnNavigatorWalkedTileListener;
         }
 
         void OnDisable()
@@ -156,6 +157,7 @@ namespace Game
             GameEvents.Instance.PlayerUsedSkill -= OnPlayerUsedSkillEventListener;
             GameEvents.Instance.PlayerDamaged -= OnPlayerDamagedEventListener;
             GameEvents.Instance.EnemyDead -= OnEnemyDeadListener;
+            GameEvents.Instance.NavigatorWalkedTile -= OnNavigatorWalkedTileListener;
         }
 
         // Start is called before the first frame update
@@ -671,6 +673,87 @@ namespace Game
             }
         }
 
+        private void OnNavigatorWalkedTileListener(object sender, GameEvents.NavigatorWalkedTileEventArgs e)
+        {
+            var navigator = e.Navigator;
+            var lastTile = _levelManager.NavGraph.GetNode(
+                navigator.NavEntity.LastIndexes.Item1,
+                navigator.NavEntity.LastIndexes.Item2);
+
+            if (lastTile != null)
+            {
+                var slow = navigator != _player;
+                if (lastTile == _levelManager.NavGraph.WarperLeft)
+                {
+                    //warp from left to right
+                    //create a path from right warper to -4 left
+                    var warpedLeftTargetTile = _levelManager.NavGraph.GetNode(
+                        _levelManager.NavGraph.WarperRight.Indexes.Item1 - 4,
+                        _levelManager.NavGraph.WarperRight.Indexes.Item2);
+                    var warpedLeftPath =
+                        _levelManager.NavGraph.ShortestPath(
+                            _levelManager.NavGraph.WarperRight,
+                            warpedLeftTargetTile);
+                    navigator.NavEntity.SetPath(warpedLeftPath);
+                    if(slow) StartCoroutine(ModifyNavigatorSpeedTemporarily(1, 0.5f, navigator.NavEntity));
+                    navigator.NavEntity.SetCurrentPosition(
+                        _levelManager.NavGraph.WarperRight.Indexes.Item1,
+                        _levelManager.NavGraph.WarperRight.Indexes.Item2);
+                }
+                else if (lastTile == _levelManager.NavGraph.WarperRight)
+                {
+                    //warp from right to left
+                    //create a path from left warper to +4 right
+                    var warpedRightTargetTile = _levelManager.NavGraph.GetNode(
+                        _levelManager.NavGraph.WarperLeft.Indexes.Item1 + 4,
+                        _levelManager.NavGraph.WarperLeft.Indexes.Item2);
+                    var warpedRightPath =
+                        _levelManager.NavGraph.ShortestPath(
+                            _levelManager.NavGraph.WarperLeft,
+                            warpedRightTargetTile);
+                    navigator.NavEntity.SetPath(warpedRightPath);
+                    if (slow) StartCoroutine(ModifyNavigatorSpeedTemporarily(1, 0.5f, navigator.NavEntity));
+                    navigator.NavEntity.SetCurrentPosition(
+                        _levelManager.NavGraph.WarperLeft.Indexes.Item1,
+                        _levelManager.NavGraph.WarperLeft.Indexes.Item2);
+                }
+                else if (lastTile == _levelManager.NavGraph.WarperUp)
+                {
+                    //warp from up to dow
+                    //create a path from down warper to +2 down
+                    var warpedDownTargetTile = _levelManager.NavGraph.GetNode(
+                        _levelManager.NavGraph.WarperDown.Indexes.Item1,
+                        _levelManager.NavGraph.WarperDown.Indexes.Item2 + 2);
+                    var warpedDownPath =
+                        _levelManager.NavGraph.ShortestPath(
+                            _levelManager.NavGraph.WarperDown,
+                            warpedDownTargetTile);
+                    navigator.NavEntity.SetPath(warpedDownPath);
+                    if (slow) StartCoroutine(ModifyNavigatorSpeedTemporarily(1, 0.5f, navigator.NavEntity));
+                    navigator.NavEntity.SetCurrentPosition(
+                        _levelManager.NavGraph.WarperDown.Indexes.Item1,
+                        _levelManager.NavGraph.WarperDown.Indexes.Item2);
+                }
+                else if (lastTile == _levelManager.NavGraph.WarperDown)
+                {
+                    //warp from down to up
+                    //create a path from up warper to -2 up
+                    var warpedUpTargetTile = _levelManager.NavGraph.GetNode(
+                        _levelManager.NavGraph.WarperUp.Indexes.Item1,
+                        _levelManager.NavGraph.WarperUp.Indexes.Item2 - 2);
+                    var warpedUpPath =
+                        _levelManager.NavGraph.ShortestPath(
+                            _levelManager.NavGraph.WarperUp,
+                            warpedUpTargetTile);
+                    navigator.NavEntity.SetPath(warpedUpPath);
+                    if (slow) StartCoroutine(ModifyNavigatorSpeedTemporarily(1, 0.5f, navigator.NavEntity));
+                    navigator.NavEntity.SetCurrentPosition(
+                        _levelManager.NavGraph.WarperUp.Indexes.Item1,
+                        _levelManager.NavGraph.WarperUp.Indexes.Item2);
+                }
+            }
+        }
+
         private void OnPlayerUsedSkillEventListener(object sender, GameEvents.OnPlayerUsedSkillEventArgs e)
         {
             _player.DisableSkill();
@@ -833,6 +916,8 @@ namespace Game
             while (duration > 0)
             {
                 duration -= Time.deltaTime;
+                if (navi != null)
+                    navi.SetSpeedMod(mod);
                 yield return null;
             }
             if (navi != null)

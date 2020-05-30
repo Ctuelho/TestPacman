@@ -25,6 +25,14 @@ namespace Game
             NavEntity.SetSpeed(1);
             NavEntity.EnableMoving();
         }
+        
+        protected virtual void Update()
+        {
+            if (NavEntity.ReachedDestination)
+            {
+                GameEvents.Instance.OnNavigatorWalkedTile(new GameEvents.NavigatorWalkedTileEventArgs(){ Navigator = this });
+            }
+        }
     }
 
     public class Collectable : MonoBehaviour

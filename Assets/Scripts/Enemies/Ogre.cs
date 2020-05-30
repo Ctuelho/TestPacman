@@ -5,8 +5,9 @@ namespace Game
     public class Ogre : Enemy
     {
         #region unity event functions
-        void Update()
+        protected override void Update()
         {
+            base.Update();
             if (Spawned)
             {
                 switch (ActionState)

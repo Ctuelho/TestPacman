@@ -38,6 +38,10 @@ namespace Game
             public int indexX;
             public int indexY;
         }
+        public class NavigatorWalkedTileEventArgs : EventArgs
+        {
+            public Navigator Navigator;
+        }
         public class SkillActiveEventArgs : EventArgs 
         {
             public bool SkillStatus;
@@ -56,6 +60,7 @@ namespace Game
         public event EventHandler<PlayerDamagedEventArgs> PlayerDamaged;
         public event EventHandler<GhostEatenEventArgs> GhostEaten;
         public event EventHandler<PlayerWalkedTileEventArgs> PlayerWalkedTile;
+        public event EventHandler<NavigatorWalkedTileEventArgs> NavigatorWalkedTile;
         public event EventHandler<OnPlayerUsedSkillEventArgs> PlayerUsedSkill;
         public event EventHandler<OnEnemyDeadEventArgs> EnemyDead;
         #endregion handlers
@@ -89,6 +94,11 @@ namespace Game
         public void OnPlayerWalkedTile(PlayerWalkedTileEventArgs args)
         {
             PlayerWalkedTile?.Invoke(this, args);
+        }
+
+        public void OnNavigatorWalkedTile(NavigatorWalkedTileEventArgs args)
+        {
+            NavigatorWalkedTile?.Invoke(this, args);
         }
 
         public void OnPlayerUsedSkill(OnPlayerUsedSkillEventArgs args)

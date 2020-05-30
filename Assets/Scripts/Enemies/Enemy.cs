@@ -39,10 +39,7 @@ namespace Game
             //check if it was a spell
             if(collision.gameObject.layer == GameController.Instance.SPELLS_LAYER)
             {
-                if (CanBeDamaged)
-                {
-                    ReceiveDamage();
-                }
+                ReceiveDamage();
             }
             else if (collision.gameObject.layer == GameController.Instance.PLAYER_LAYER)
             {
@@ -50,11 +47,22 @@ namespace Game
                     GameEvents.Instance.OnPlayerDamaged(new GameEvents.PlayerDamagedEventArgs());
             }
         }
+
+        private void OnTriggerStay2D(Collider2D collision)
+        {
+            if (collision.gameObject.layer == GameController.Instance.SPELLS_LAYER)
+            {
+                ReceiveDamage();
+            }
+        }
         #endregion unity event functions
 
         #region private functions
         protected virtual void ReceiveDamage()
         {
+            if (!CanBeDamaged)
+                return;
+
             Life--;
             if(Life == 0)
             {
