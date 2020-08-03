@@ -39,6 +39,7 @@ namespace Game
             //check if it was a spell
             if(collision.gameObject.layer == GameController.Instance.SPELLS_LAYER)
             {
+                Debug.Log("OnTriggerEnter2D spell " + gameObject.name);
                 ReceiveDamage();
             }
             else if (collision.gameObject.layer == GameController.Instance.PLAYER_LAYER)
@@ -52,6 +53,7 @@ namespace Game
         {
             if (collision.gameObject.layer == GameController.Instance.SPELLS_LAYER)
             {
+                Debug.Log("OnTriggerStay2D spell " + gameObject.name);
                 ReceiveDamage();
             }
         }

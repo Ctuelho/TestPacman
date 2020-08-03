@@ -12,7 +12,6 @@ namespace Game
         protected override void Update()
         {
             base.Update();
-            Debug.Log(transform.position);
             if (Spawned)
             {
                 switch (ActionState)
